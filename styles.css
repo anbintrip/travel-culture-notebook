@@ -65,3 +65,30 @@ body.drawer-open{padding-right:var(--scrollbar-compensation,0)}
 .skip-target{scroll-margin-top:10px;outline:none}
 
 .hero-title-block{align-self:end}
+
+/* Release revision: interactive tooltip, map zoom, desktop readability */
+.map-track{transform-origin:left center}
+.country-tooltip{pointer-events:auto}
+.tooltip-cta{width:100%;border:0;border-top:1px dashed #ddd3c3;background:transparent;text-align:left;cursor:pointer;font-family:inherit}
+.tooltip-cta:hover{color:#b96f30}
+.map-zoom-label{min-width:48px;height:34px;display:grid;place-items:center;padding:0 6px;border:1px solid rgba(45,51,58,.10);border-radius:999px;background:rgba(255,250,242,.72);color:#747b82;font-size:10px;font-variant-numeric:tabular-nums}
+.map-nudges button:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+
+@media(min-width:901px){
+  .brand strong{font-size:19px}.brand small{font-size:12px}.nav-links a{font-size:15px}
+  .eyebrow{font-size:12px}.hero-lede{font-size:17px;line-height:1.8}.hero-stats span{font-size:12px}.hero-stats strong{font-size:18px}
+  .map-kicker{font-size:12px}.map-toolbar strong{font-size:26px}.legend{font-size:13px}.map-footer-note{font-size:13px}
+  .drag-hint strong{font-size:13px}.drag-hint small{font-size:11px}
+  .country-tooltip{min-width:244px;padding:16px 18px}.tooltip-title .flag{font-size:25px}.tooltip-title strong{font-size:16px}.tooltip-title small{font-size:13px}.tooltip-count{font-size:14px}.level-row{font-size:13px}.tooltip-cta{font-size:13px}.tooltip-empty{font-size:14px}
+  .section-heading>p{font-size:15px}.destination-card strong{font-size:16px}.destination-card small{font-size:13px}.destination-card .count{font-size:12px}
+  .theme-chip strong{font-size:13px}.comparison-country strong{font-size:14px}.comparison-country small{font-size:10px}.comparison-level{font-size:11px}.comparison-item p{font-size:13px}.comparison-more{font-size:11px}
+  .notebook-copy p:last-child{font-size:15px}
+  .drawer-stamp{font-size:12px}.drawer-country h2{font-size:32px}.drawer-country small{font-size:14px}.drawer-summary-line{font-size:11px}.drawer-intro strong{font-size:21px}.snapshot-pill{font-size:11px}.quick-item small{font-size:11px}.quick-item p{font-size:14px;line-height:1.65}.primary-btn,.secondary-btn{font-size:14px}
+  .back-link{font-size:14px}.country-cover .count-badge{font-size:13px}.updated-badge{font-size:11px}.country-sidebar h3{font-size:14px}.category-nav button{font-size:13px}.sidebar-note{font-size:12px}.country-content h2{font-size:28px}.content-order-note{font-size:13px}
+  .essential-meta{font-size:11px}.essential-card strong{font-size:15px}.essential-card small{font-size:13px}.essential-card em{font-size:11px}.handbook-heading span{font-size:11px}.category-section-head h3{font-size:21px}.category-section-head small{font-size:11px}
+  .reminder-top{font-size:12px}.reminder-card h3{font-size:16px}.reminder-advice{font-size:14px;line-height:1.7}.reminder-detail summary{font-size:12px}.reminder-detail p{font-size:13px}.source-row{font-size:11px}
+}
+
+@media(max-width:600px){
+  .map-zoom-label{height:32px;min-width:42px;font-size:9px}
+}

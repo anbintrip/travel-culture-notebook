@@ -56,6 +56,16 @@
   let velocity = 0;
   let animationFrame = null;
   let previousFocus = null;
+  let tooltipHideTimer = null;
+  let zoom = 1;
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 2.5;
+  const ZOOM_STEP = .25;
+  let pinching = false;
+  let pinchStartDistance = 0;
+  let pinchStartZoom = 1;
+  let pinchMapX = 0;
+  let pinchFocusX = 0;
 
   function getZhFromFeature(feature) {
     const iso2 = feature?.iso2 || '';
@@ -98,10 +108,12 @@
     const levels = [
       sum.green ? `🟢 ${sum.green}` : '', sum.yellow ? `🟡 ${sum.yellow}` : '', sum.red ? `🔴 ${sum.red}` : '', sum.law ? `⚖️ ${sum.law}` : ''
     ].filter(Boolean).join('　');
-    return `<div class="tooltip-title"><span class="flag">${meta.flag}</span><div><strong>${esc(zh)}</strong><small>${esc(meta.en)}</small></div></div><div class="tooltip-count">${sum.total} 則旅行文化提醒</div><div class="level-row">${levels}</div><span class="tooltip-cta">點一下打開手札 →</span>`;
+    return `<div class="tooltip-title"><span class="flag">${meta.flag}</span><div><strong>${esc(zh)}</strong><small>${esc(meta.en)}</small></div></div><div class="tooltip-count">${sum.total} 則旅行文化提醒</div><div class="level-row">${levels}</div><button type="button" class="tooltip-cta" data-tooltip-open>點一下打開手札 →</button>`;
   }
 
   function showTooltip(evt, zh, fallbackName='') {
+    clearTimeout(tooltipHideTimer);
+    tooltip.dataset.country = zh || '';
     tooltip.innerHTML = tooltipHtml(zh, fallbackName);
     tooltip.hidden = false;
     moveTooltip(evt);
@@ -120,22 +132,42 @@
   }
 
   function hideTooltip() {
+    clearTimeout(tooltipHideTimer);
     tooltip.hidden = true;
+    tooltip.removeAttribute('data-country');
     currentHover?.classList.remove('is-hovered');
     currentHover = null;
   }
 
+  function scheduleTooltipHide() {
+    clearTimeout(tooltipHideTimer);
+    tooltipHideTimer = setTimeout(hideTooltip, 180);
+  }
+
+  tooltip?.addEventListener('pointerenter', () => clearTimeout(tooltipHideTimer));
+  tooltip?.addEventListener('pointerleave', scheduleTooltipHide);
+  tooltip?.addEventListener('click', e => {
+    const button = e.target.closest('[data-tooltip-open]');
+    if (!button) return;
+    const zh = tooltip.dataset.country;
+    if (zh && summaryFor(zh)) {
+      openDrawer(zh);
+      hideTooltip();
+    }
+  });
+
   function bindCountryNode(node, zh, fallbackName='') {
     const available = Boolean(zh && summaryFor(zh));
     node.addEventListener('pointerenter', e => {
-      if (dragging || e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches) return;
+      clearTimeout(tooltipHideTimer);
+      if (dragging || pinching || e.pointerType === 'touch' || window.matchMedia('(hover: none)').matches) return;
       currentHover?.classList.remove('is-hovered');
       currentHover = node;
       node.classList.add('is-hovered');
       showTooltip(e, zh, fallbackName);
     });
     node.addEventListener('pointermove', e => { if (e.pointerType !== 'touch') moveTooltip(e); });
-    node.addEventListener('pointerleave', hideTooltip);
+    node.addEventListener('pointerleave', scheduleTooltipHide);
     node.addEventListener('click', () => {
       if (didDrag) return;
       if (available) openDrawer(zh);
@@ -210,7 +242,7 @@
 
   function updateBounds() {
     const viewportW = viewport.clientWidth;
-    const trackW = track.getBoundingClientRect().width;
+    const trackW = track.offsetWidth * zoom;
     maxOffset = 0;
     minOffset = Math.min(0, viewportW - trackW);
     offsetX = Math.min(maxOffset, Math.max(minOffset, offsetX));
@@ -223,7 +255,28 @@
     applyOffset();
   }
 
-  function applyOffset() { track.style.transform = `translate3d(${offsetX}px,0,0)`; }
+  function applyOffset() { track.style.transform = `translate3d(${offsetX}px,0,0) scale(${zoom})`; }
+
+  function updateZoomUI() {
+    const label = $('#map-zoom-label');
+    const out = $('#map-zoom-out');
+    const inn = $('#map-zoom-in');
+    if (label) label.textContent = `${Math.round(zoom * 100)}%`;
+    if (out) out.disabled = zoom <= MIN_ZOOM + .001;
+    if (inn) inn.disabled = zoom >= MAX_ZOOM - .001;
+  }
+
+  function setZoom(nextZoom, focusX = viewport.clientWidth / 2) {
+    const clamped = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
+    if (Math.abs(clamped - zoom) < .001) return;
+    cancelAnimationFrame(animationFrame);
+    hideTooltip();
+    const mapX = (focusX - offsetX) / zoom;
+    zoom = clamped;
+    offsetX = focusX - mapX * zoom;
+    updateBounds();
+    updateZoomUI();
+  }
 
   function resisted(next) {
     const resistance = .24;
@@ -254,12 +307,13 @@
   }
 
   viewport.addEventListener('pointerdown', e => {
+    if (pinching) return;
     if (e.button !== undefined && e.button !== 0) return;
     dragging = true; didDrag = false; startX = lastX = e.clientX; velocity = 0;
     viewport.classList.add('is-dragging'); viewport.setPointerCapture?.(e.pointerId); hideTooltip(); cancelAnimationFrame(animationFrame);
   });
   viewport.addEventListener('pointermove', e => {
-    if (!dragging) return;
+    if (!dragging || pinching) return;
     const dx = e.clientX - lastX;
     if (Math.abs(e.clientX-startX) > 5) didDrag = true;
     velocity = dx;
@@ -280,7 +334,46 @@
   viewport.addEventListener('pointerup', endDrag);
   viewport.addEventListener('pointercancel', endDrag);
   viewport.addEventListener('pointerleave', e => { if (dragging && e.buttons===0) endDrag(); });
-  window.addEventListener('resize', updateBounds);
+  window.addEventListener('resize', () => { updateBounds(); updateZoomUI(); });
+
+  const touchDistance = touches => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  };
+  viewport.addEventListener('touchstart', e => {
+    if (e.touches.length !== 2) return;
+    pinching = true;
+    dragging = false;
+    didDrag = true;
+    viewport.classList.remove('is-dragging');
+    cancelAnimationFrame(animationFrame);
+    hideTooltip();
+    pinchStartDistance = touchDistance(e.touches);
+    pinchStartZoom = zoom;
+    const rect = viewport.getBoundingClientRect();
+    pinchFocusX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+    pinchMapX = (pinchFocusX - offsetX) / zoom;
+  }, {passive:true});
+  viewport.addEventListener('touchmove', e => {
+    if (!pinching || e.touches.length !== 2) return;
+    e.preventDefault();
+    const distance = touchDistance(e.touches);
+    if (!pinchStartDistance) return;
+    const rect = viewport.getBoundingClientRect();
+    const focusX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartZoom * (distance / pinchStartDistance)));
+    offsetX = focusX - pinchMapX * zoom;
+    updateBounds();
+    updateZoomUI();
+  }, {passive:false});
+  viewport.addEventListener('touchend', e => {
+    if (e.touches.length < 2) {
+      pinching = false;
+      pinchStartDistance = 0;
+      setTimeout(() => { didDrag = false; }, 80);
+    }
+  }, {passive:true});
 
   if (storageGet('culture-map-dragged') === '1') hint.classList.add('is-hidden');
 
@@ -308,6 +401,9 @@
 
   $('#map-left')?.addEventListener('click', () => nudgeMap(1));
   $('#map-right')?.addEventListener('click', () => nudgeMap(-1));
+  $('#map-zoom-out')?.addEventListener('click', () => setZoom(zoom - ZOOM_STEP));
+  $('#map-zoom-in')?.addEventListener('click', () => setZoom(zoom + ZOOM_STEP));
+  updateZoomUI();
   viewport.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') { e.preventDefault(); nudgeMap(1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); nudgeMap(-1); }
