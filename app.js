@@ -47,13 +47,19 @@
 
   let currentHover = null;
   let offsetX = 0;
+  let offsetY = 0;
   let minOffset = 0;
   let maxOffset = 0;
+  let minOffsetY = 0;
+  let maxOffsetY = 0;
   let dragging = false;
   let didDrag = false;
   let startX = 0;
+  let startY = 0;
   let lastX = 0;
+  let lastY = 0;
   let velocity = 0;
+  let velocityY = 0;
   let animationFrame = null;
   let previousFocus = null;
   let tooltipHideTimer = null;
@@ -65,7 +71,9 @@
   let pinchStartDistance = 0;
   let pinchStartZoom = 1;
   let pinchMapX = 0;
+  let pinchMapY = 0;
   let pinchFocusX = 0;
+  let pinchFocusY = 0;
 
   function getZhFromFeature(feature) {
     const iso2 = feature?.iso2 || '';
@@ -146,6 +154,9 @@
 
   tooltip?.addEventListener('pointerenter', () => clearTimeout(tooltipHideTimer));
   tooltip?.addEventListener('pointerleave', scheduleTooltipHide);
+  // The tooltip sits inside the draggable map viewport. Stop pointerdown here so
+  // clicking its CTA does not start a map drag and hide the tooltip first.
+  tooltip?.addEventListener('pointerdown', e => e.stopPropagation());
   tooltip?.addEventListener('click', e => {
     const button = e.target.closest('[data-tooltip-open]');
     if (!button) return;
@@ -242,20 +253,27 @@
 
   function updateBounds() {
     const viewportW = viewport.clientWidth;
+    const viewportH = viewport.clientHeight;
     const trackW = track.offsetWidth * zoom;
+    const trackH = track.offsetHeight * zoom;
     maxOffset = 0;
     minOffset = Math.min(0, viewportW - trackW);
+    maxOffsetY = 0;
+    minOffsetY = Math.min(0, viewportH - trackH);
     offsetX = Math.min(maxOffset, Math.max(minOffset, offsetX));
+    offsetY = Math.min(maxOffsetY, Math.max(minOffsetY, offsetY));
+    viewport.classList.toggle('is-zoomed', zoom > MIN_ZOOM + .001);
     applyOffset();
   }
 
   function centerInitialMap() {
     const centerBias = window.innerWidth < 700 ? .52 : .38;
     offsetX = minOffset * centerBias;
+    offsetY = 0;
     applyOffset();
   }
 
-  function applyOffset() { track.style.transform = `translate3d(${offsetX}px,0,0) scale(${zoom})`; }
+  function applyOffset() { track.style.transform = `translate3d(${offsetX}px,${offsetY}px,0) scale(${zoom})`; }
 
   function updateZoomUI() {
     const label = $('#map-zoom-label');
@@ -266,22 +284,24 @@
     if (inn) inn.disabled = zoom >= MAX_ZOOM - .001;
   }
 
-  function setZoom(nextZoom, focusX = viewport.clientWidth / 2) {
+  function setZoom(nextZoom, focusX = viewport.clientWidth / 2, focusY = viewport.clientHeight / 2) {
     const clamped = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
     if (Math.abs(clamped - zoom) < .001) return;
     cancelAnimationFrame(animationFrame);
     hideTooltip();
     const mapX = (focusX - offsetX) / zoom;
+    const mapY = (focusY - offsetY) / zoom;
     zoom = clamped;
     offsetX = focusX - mapX * zoom;
+    offsetY = focusY - mapY * zoom;
     updateBounds();
     updateZoomUI();
   }
 
-  function resisted(next) {
+  function resistedAxis(next, min, max) {
     const resistance = .24;
-    if (next > maxOffset) return maxOffset + (next-maxOffset)*resistance;
-    if (next < minOffset) return minOffset + (next-minOffset)*resistance;
+    if (next > max) return max + (next-max)*resistance;
+    if (next < min) return min + (next-min)*resistance;
     return next;
   }
 
@@ -289,15 +309,21 @@
     cancelAnimationFrame(animationFrame);
     const tick = () => {
       velocity *= .91;
-      let next = offsetX + velocity;
-      if (next > maxOffset || next < minOffset) velocity *= .65;
-      offsetX = resisted(next);
-      if (Math.abs(velocity) < .12) {
-        const target = Math.min(maxOffset, Math.max(minOffset, offsetX));
-        offsetX += (target - offsetX) * .2;
+      velocityY *= .91;
+      let nextX = offsetX + velocity;
+      let nextY = offsetY + velocityY;
+      if (nextX > maxOffset || nextX < minOffset) velocity *= .65;
+      if (nextY > maxOffsetY || nextY < minOffsetY) velocityY *= .65;
+      offsetX = resistedAxis(nextX, minOffset, maxOffset);
+      offsetY = resistedAxis(nextY, minOffsetY, maxOffsetY);
+      if (Math.abs(velocity) < .12 && Math.abs(velocityY) < .12) {
+        const targetX = Math.min(maxOffset, Math.max(minOffset, offsetX));
+        const targetY = Math.min(maxOffsetY, Math.max(minOffsetY, offsetY));
+        offsetX += (targetX - offsetX) * .2;
+        offsetY += (targetY - offsetY) * .2;
         applyOffset();
-        if (Math.abs(target-offsetX) > .25) animationFrame = requestAnimationFrame(tick);
-        else { offsetX = target; applyOffset(); }
+        if (Math.abs(targetX-offsetX) > .25 || Math.abs(targetY-offsetY) > .25) animationFrame = requestAnimationFrame(tick);
+        else { offsetX = targetX; offsetY = targetY; applyOffset(); }
         return;
       }
       applyOffset();
@@ -308,17 +334,22 @@
 
   viewport.addEventListener('pointerdown', e => {
     if (pinching) return;
+    if (e.target.closest?.('#country-tooltip, button, a, summary')) return;
     if (e.button !== undefined && e.button !== 0) return;
-    dragging = true; didDrag = false; startX = lastX = e.clientX; velocity = 0;
+    dragging = true; didDrag = false; startX = lastX = e.clientX; startY = lastY = e.clientY; velocity = 0; velocityY = 0;
     viewport.classList.add('is-dragging'); viewport.setPointerCapture?.(e.pointerId); hideTooltip(); cancelAnimationFrame(animationFrame);
   });
   viewport.addEventListener('pointermove', e => {
     if (!dragging || pinching) return;
     const dx = e.clientX - lastX;
-    if (Math.abs(e.clientX-startX) > 5) didDrag = true;
+    const dy = e.clientY - lastY;
+    if (Math.hypot(e.clientX-startX, e.clientY-startY) > 5) didDrag = true;
     velocity = dx;
-    offsetX = resisted(offsetX + dx);
+    velocityY = zoom > MIN_ZOOM + .001 ? dy : 0;
+    offsetX = resistedAxis(offsetX + dx, minOffset, maxOffset);
+    if (zoom > MIN_ZOOM + .001) offsetY = resistedAxis(offsetY + dy, minOffsetY, maxOffsetY);
     lastX = e.clientX;
+    lastY = e.clientY;
     applyOffset();
   });
   const endDrag = () => {
@@ -353,7 +384,9 @@
     pinchStartZoom = zoom;
     const rect = viewport.getBoundingClientRect();
     pinchFocusX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+    pinchFocusY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
     pinchMapX = (pinchFocusX - offsetX) / zoom;
+    pinchMapY = (pinchFocusY - offsetY) / zoom;
   }, {passive:true});
   viewport.addEventListener('touchmove', e => {
     if (!pinching || e.touches.length !== 2) return;
@@ -362,8 +395,10 @@
     if (!pinchStartDistance) return;
     const rect = viewport.getBoundingClientRect();
     const focusX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+    const focusY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
     zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, pinchStartZoom * (distance / pinchStartDistance)));
     offsetX = focusX - pinchMapX * zoom;
+    offsetY = focusY - pinchMapY * zoom;
     updateBounds();
     updateZoomUI();
   }, {passive:false});
@@ -407,6 +442,8 @@
   viewport.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') { e.preventDefault(); nudgeMap(1); }
     if (e.key === 'ArrowRight') { e.preventDefault(); nudgeMap(-1); }
+    if (zoom > MIN_ZOOM + .001 && e.key === 'ArrowUp') { e.preventDefault(); offsetY = Math.min(maxOffsetY, offsetY + 90); applyOffset(); }
+    if (zoom > MIN_ZOOM + .001 && e.key === 'ArrowDown') { e.preventDefault(); offsetY = Math.max(minOffsetY, offsetY - 90); applyOffset(); }
   });
 
   function priorityScore(r) {

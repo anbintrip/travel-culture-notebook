@@ -2,24 +2,24 @@
 ## Latest interaction updates
 
 - Desktop country hover cards are now clickable; use **「點一下打開手札」** to open the quick notebook.
-- World map supports **− / ＋ zoom controls** from 100% to 250%.
+- World map supports **− / ＋ zoom controls** from 100% to 250%, and can be dragged **up/down/left/right after zooming**.
 - Mobile users can use **two-finger pinch zoom** on the map.
-- Desktop reading sizes were increased while mobile typography remains intentionally compact.
+- Desktop reading sizes were increased again for easier reading while mobile typography remains intentionally compact.
 - Homepage headline: **做一位禮貌的外國人**.
 
 # 入境隨俗手札｜GitHub Pages Final Release
 
 互動式國際旅行文化網站。核心體驗不是傳統旅遊文章列表，而是從一張大型世界地圖開始，快速理解各國的習俗、禮儀、禁忌與重要旅遊法規。
 
-> 出國前 3 分鐘，少踩一個雷。
+> 做一位禮貌的外國人。
 
 ## Final Release 已完成
 
 - 35 個國家／地區已點亮
 - 101 筆公開旅行文化提醒
 - 大型 SVG 世界地圖
-- 滑鼠／觸控左右拖曳、慣性、邊界阻尼
-- 左右輔助按鈕與鍵盤方向鍵
+- 原始比例左右拖曳；放大後支援上下左右拖曳、慣性與邊界阻尼
+- 左右輔助按鈕；放大後鍵盤上下左右方向鍵皆可移動
 - 國家 Hover 浮起與輕量資訊
 - 小國家 invisible hit area
 - 桌機右側快速手札 Drawer

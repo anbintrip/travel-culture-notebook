@@ -67,7 +67,7 @@ body.drawer-open{padding-right:var(--scrollbar-compensation,0)}
 .hero-title-block{align-self:end}
 
 /* Release revision: interactive tooltip, map zoom, desktop readability */
-.map-track{transform-origin:left center}
+.map-track{transform-origin:left top}
 .country-tooltip{pointer-events:auto}
 .tooltip-cta{width:100%;border:0;border-top:1px dashed #ddd3c3;background:transparent;text-align:left;cursor:pointer;font-family:inherit}
 .tooltip-cta:hover{color:#b96f30}
@@ -92,3 +92,38 @@ body.drawer-open{padding-right:var(--scrollbar-compensation,0)}
 @media(max-width:600px){
   .map-zoom-label{height:32px;min-width:42px;font-size:9px}
 }
+
+
+/* Final V3: 2D map panning + stronger desktop readability */
+.map-viewport.is-zoomed{touch-action:none}
+.country-tooltip{z-index:12}
+.tooltip-cta{min-height:42px;padding:11px 0 2px}
+
+@media(min-width:901px){
+  body{font-size:17px}
+  .brand strong{font-size:21px}.brand small{font-size:14px}.nav-links a{font-size:17px}
+  .eyebrow{font-size:14px}.hero-lede{font-size:19px;line-height:1.85}.hero-stats span{font-size:14px;padding:8px 13px}.hero-stats strong{font-size:21px}
+  .map-kicker{font-size:14px}.map-toolbar strong{font-size:30px}.legend{font-size:15px}.map-zoom-label{font-size:12px;min-width:54px}.map-nudges button{width:38px;height:38px;font-size:18px}.map-footer-note{font-size:15px;line-height:1.6}
+  .drag-hint strong{font-size:15px}.drag-hint small{font-size:13px}
+  .country-tooltip{min-width:270px;padding:18px 20px}.tooltip-title .flag{font-size:28px}.tooltip-title strong{font-size:19px}.tooltip-title small{font-size:15px}.tooltip-count{font-size:16px}.level-row{font-size:15px}.tooltip-cta{font-size:15px}.tooltip-empty{font-size:16px}
+  .section-heading h2{font-size:32px}.section-heading>p{font-size:17px;line-height:1.75}.destination-card strong{font-size:18px}.destination-card small{font-size:15px}.destination-card .count{font-size:14px}
+  .theme-chip strong{font-size:15px}.comparison-head h3{font-size:26px}.comparison-head>span{font-size:14px}.comparison-country strong{font-size:16px}.comparison-country small{font-size:13px}.comparison-level{font-size:13px}.comparison-item p{font-size:15px;line-height:1.75}.comparison-more{font-size:13px}
+  .notebook-copy p:last-child{font-size:17px;line-height:1.8}
+  .drawer-stamp{font-size:13px}.drawer-country h2{font-size:36px}.drawer-country small{font-size:16px}.drawer-summary-line{font-size:13px}.drawer-intro strong{font-size:23px}.snapshot-pill{font-size:12px}.quick-item small{font-size:13px}.quick-item p{font-size:16px;line-height:1.72}.primary-btn,.secondary-btn{font-size:16px}
+  .back-link{font-size:16px}.country-cover .count-badge{font-size:15px}.updated-badge{font-size:13px}.country-sidebar h3{font-size:16px}.category-nav button{font-size:15px}.sidebar-note{font-size:14px;line-height:1.7}.country-content h2{font-size:31px}.content-order-note{font-size:15px}
+  .essential-meta{font-size:13px}.essential-card strong{font-size:17px}.essential-card small{font-size:15px}.essential-card em{font-size:13px}.handbook-heading span{font-size:13px}.category-section-head h3{font-size:24px}.category-section-head small{font-size:13px}
+  .reminder-top{font-size:14px}.reminder-card h3{font-size:18px}.reminder-advice{font-size:16px;line-height:1.78}.reminder-detail summary{font-size:14px}.reminder-detail p{font-size:15px;line-height:1.75}.source-row{font-size:13px}
+}
+
+/* Make the desktop hover CTA clearly actionable. */
+.tooltip-cta{
+  margin-top:12px;
+  padding:10px 12px;
+  border:1px solid rgba(216,138,71,.28);
+  border-radius:10px;
+  background:#fff3e4;
+  color:#b96f30;
+  text-align:center;
+  font-weight:800;
+}
+.tooltip-cta:hover{background:#ffe9cf;border-color:rgba(216,138,71,.5);color:#9f5d25}
