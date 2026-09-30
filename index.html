@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f3ea" />
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="index,follow" />
+  <meta name="application-name" content="入境隨俗手札" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>入境隨俗手札｜世界旅行文化地圖</title>
+  <meta name="description" content="出國前 3 分鐘，搞懂當地習俗、禮儀、禁忌與重要旅遊法規。從世界地圖快速探索 35 個國家與地區的旅行文化提醒。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta property="og:site_name" content="入境隨俗手札" />
+  <meta property="og:title" content="入境隨俗手札｜世界旅行文化地圖" />
+  <meta property="og:description" content="出國前 3 分鐘，搞懂當地習俗、禮儀、禁忌與重要旅遊法規。" />
+  <meta property="og:image" content="./share-card.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="入境隨俗手札｜世界旅行文化地圖" />
+  <meta name="twitter:description" content="出國前 3 分鐘，搞懂當地習俗、禮儀、禁忌與重要旅遊法規。" />
+  <meta name="twitter:image" content="./share-card.png" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到主要內容</a>
+  <div class="paper-grain" aria-hidden="true"></div>
+
+  <header class="site-header shell">
+    <a class="brand" href="#/" aria-label="入境隨俗手札首頁">
+      <span class="brand-mark">✦</span>
+      <span>
+        <strong>入境隨俗手札</strong>
+        <small>Travel Culture Notebook</small>
+      </span>
+    </a>
+    <nav class="nav-links" aria-label="主要導覽">
+      <a href="#explore">探索世界</a>
+      <a href="#themes">情境比較</a>
+      <a href="#about">關於手札</a>
+    </nav>
+  </header>
+
+  <div id="main-content" class="skip-target" tabindex="-1"></div>
+  <main id="home-view" tabindex="-1">
+    <section class="hero shell" id="explore">
+      <div class="hero-copy">
+        <div class="hero-title-block">
+          <p class="eyebrow"><span class="stamp-dot"></span> WORLD ETIQUETTE NOTEBOOK</p>
+          <h1>出國前 3 分鐘，<br><em>少踩一個雷。</em></h1>
+        </div>
+        <div class="hero-side">
+          <p class="hero-lede">從世界地圖開始探索每個地方的習俗、禮儀、禁忌與重要旅遊法規。不是背百科，而是先知道「我到當地應該怎麼做」。</p>
+          <div class="hero-stats" aria-label="目前手札資料量">
+            <span><strong id="stat-countries">35</strong> 個國家／地區</span>
+            <span><strong id="stat-reminders">101</strong> 則旅行提醒</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-card" id="map-card">
+        <div class="map-toolbar">
+          <div>
+            <span class="map-kicker">EXPLORE THE WORLD</span>
+            <strong>今天想去哪裡？</strong>
+          </div>
+          <div class="map-actions">
+            <div class="legend" aria-label="地圖圖例">
+              <span><i class="legend-swatch available"></i>已有手札</span>
+              <span><i class="legend-swatch empty"></i>整理中</span>
+            </div>
+            <div class="map-nudges" aria-label="地圖左右移動">
+              <button type="button" id="map-left" aria-label="向左查看世界地圖">←</button>
+              <button type="button" id="map-right" aria-label="向右查看世界地圖">→</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-viewport" id="map-viewport" tabindex="0" aria-label="可左右拖曳的世界文化地圖" aria-describedby="map-instructions">
+          <span id="map-instructions" class="sr-only">按住滑鼠或用手指左右拖曳地圖。鍵盤使用者可用左右方向鍵移動，按 Enter 開啟聚焦國家的快速手札。</span>
+          <div class="map-track" id="map-track">
+            <svg id="world-map" role="img" aria-label="世界地圖" viewBox="0 0 1200 610" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <filter id="country-shadow" x="-30%" y="-30%" width="160%" height="180%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#364052" flood-opacity="0.18"/>
+                </filter>
+              </defs>
+              <g id="map-countries"></g>
+              <g id="map-small-countries"></g>
+            </svg>
+          </div>
+
+          <div class="map-loading" id="map-loading">
+            <span class="spinner"></span>
+            <p>正在攤開世界地圖⋯</p>
+          </div>
+
+          <div class="map-error" id="map-error" hidden>
+            <strong>地圖暫時沒有載入</strong>
+            <span>地圖資料載入失敗，請重新整理頁面。</span>
+          </div>
+
+          <div class="map-edge map-edge-left" aria-hidden="true"></div>
+          <div class="map-edge map-edge-right" aria-hidden="true"></div>
+          <div class="country-tooltip" id="country-tooltip" hidden></div>
+
+          <div class="drag-hint" id="drag-hint">
+            <span>←</span>
+            <div>
+              <strong>按住拖曳</strong>
+              <small>看看這個世界有哪些眉角</small>
+            </div>
+            <span>→</span>
+          </div>
+        </div>
+
+        <div class="map-footer-note">
+          <span class="tiny-plane">✈</span>
+          <span>有顏色的國家，代表手札已經開始整理。</span>
+          <span class="route-line" aria-hidden="true"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell destinations-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">POPULAR DESTINATIONS</p>
+          <h2>熱門目的地</h2>
+        </div>
+        <p>先從大家最常去的地方開始。點一下，直接打開快速手札。</p>
+      </div>
+      <div class="destination-strip" id="popular-destinations"></div>
+    </section>
+
+    <section class="section shell themes-section" id="themes">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">WHAT DO YOU WANT TO KNOW?</p>
+          <h2>今天想了解什麼？</h2>
+        </div>
+        <p>不是先選國家也沒關係。從「小費、交通、宗教」等旅行情境，快速比較各國差異。</p>
+      </div>
+      <div class="theme-grid" id="theme-grid"></div>
+      <div class="comparison-panel" id="comparison-panel" hidden></div>
+    </section>
+
+    <section class="section shell notebook-note" id="about">
+      <div class="notebook-tape" aria-hidden="true"></div>
+      <div class="notebook-copy">
+        <p class="eyebrow">ABOUT THIS NOTEBOOK</p>
+        <h2>不是要記得全世界，<br>而是抵達前先懂一點。</h2>
+        <p>一句話結論先看懂，再決定要不要往下讀文化背景與官方來源。文化習慣與法律規定會清楚分開，避免把「不禮貌」誤認成「違法」。</p>
+      </div>
+      <div class="passport-stamp" aria-hidden="true">
+        <span>TRAVEL</span>
+        <strong>WITH<br>RESPECT</strong>
+        <small>入境隨俗</small>
+      </div>
+    </section>
+  </main>
+
+  <section id="country-page" class="country-page" hidden aria-live="polite"></section>
+
+  <aside class="drawer" id="country-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+    <button class="drawer-close" id="drawer-close" type="button" aria-label="關閉快速手札">×</button>
+    <div id="drawer-content"></div>
+  </aside>
+  <button class="drawer-scrim" id="drawer-scrim" aria-label="關閉快速手札" hidden></button>
+
+  <footer class="site-footer shell">
+    <span>入境隨俗手札 · Travel Culture Notebook</span>
+    <span>文化資訊請以現場規定與官方最新公告為準。地圖底圖：Natural Earth。</span>
+  </footer>
+
+  <noscript><div class="noscript-note">這個網站需要啟用 JavaScript 才能使用互動世界地圖與國家手札。</div></noscript>
+
+  <script src="./map-data.js"></script>
+  <script src="./data.js"></script>
+  <script src="./detail-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

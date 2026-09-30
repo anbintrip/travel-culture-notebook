@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f3ea">
+  <title>頁面不存在｜入境隨俗手札</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f3ea;color:#24344a;font-family:system-ui,"Microsoft JhengHei",sans-serif}
+    main{width:min(560px,calc(100% - 36px));padding:40px;border:1px solid #dcd4c5;border-radius:22px;background:#fbf8f1;text-align:center;box-shadow:0 20px 60px rgba(45,48,50,.08)}
+    strong{display:block;font-family:Georgia,serif;font-size:54px;color:#d88a47}h1{font-size:24px}p{color:#6d746f}a{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:10px;background:#24344a;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <main>
+    <strong>404</strong>
+    <h1>這一頁還沒寫進手札</h1>
+    <p>如果你是從國家連結進來，請使用網站產生的 <code>#/country/...</code> 連結。</p>
+    <a id="home-link" href="./#/">回世界地圖</a>
+  </main>
+  <script>
+    (function(){
+      var p=location.pathname.split('/').filter(Boolean);
+      var base=(location.hostname.endsWith('.github.io')&&p.length)?('/'+p[0]+'/'):'/';
+      document.getElementById('home-link').href=base+'#/';
+    }());
+  </script>
+</body>
+</html>
