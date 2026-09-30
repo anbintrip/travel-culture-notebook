@@ -15,7 +15,9 @@
     } catch { return ''; }
   };
   const HOME_TITLE = '入境隨俗手札｜世界旅行文化地圖';
-  const HOME_DESCRIPTION = '出國前 3 分鐘，搞懂當地習俗、禮儀、禁忌與重要旅遊法規。從世界地圖快速探索 35 個國家與地區的旅行文化提醒。';
+  const TOTAL_COUNTRIES = Object.values(DATA.summaries).filter(Boolean).length;
+  const TOTAL_REMINDERS = Object.values(DATA.summaries).reduce((sum, item) => sum + (item?.total || 0), 0);
+  const HOME_DESCRIPTION = `從世界地圖快速探索 ${TOTAL_COUNTRIES} 個國家與地區、${TOTAL_REMINDERS} 則習俗、禮儀、禁忌與重要旅遊法規提醒。`;
   function setMetaContent(selector, value) {
     const node = document.querySelector(selector);
     if (node) node.setAttribute('content', value);
@@ -625,10 +627,8 @@
   window.addEventListener('hashchange',handleRoute);
   $('.brand')?.addEventListener('click', () => { if ((location.hash || '#/') === '#/') window.scrollTo({top:0,behavior:'smooth'}); });
 
-  const totalCountries = Object.values(DATA.summaries).filter(Boolean).length;
-  const totalReminders = Object.values(DATA.summaries).reduce((sum, item) => sum + (item?.total || 0), 0);
-  if ($('#stat-countries')) $('#stat-countries').textContent = totalCountries;
-  if ($('#stat-reminders')) $('#stat-reminders').textContent = totalReminders;
+  if ($('#stat-countries')) $('#stat-countries').textContent = TOTAL_COUNTRIES;
+  if ($('#stat-reminders')) $('#stat-reminders').textContent = TOTAL_REMINDERS;
 
   renderPopular();
   renderThemes();
