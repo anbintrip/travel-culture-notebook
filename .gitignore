@@ -1,0 +1,22 @@
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Raw content exports should not be committed
+*.csv
+*.tsv
+*notion*export*/
+
+# Local / generated packaging
+*.zip
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+
+# Editor settings
+.vscode/
+.idea/
